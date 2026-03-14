@@ -107,7 +107,7 @@ const OrderHistorySchema = new Schema<IOrderHistory>(
 OrderHistorySchema.index({ userId: 1, createdAt: -1 });
 OrderHistorySchema.index(
   { provider: 1, externalOrderId: 1 },
-  { unique: true, sparse: true },
+  { unique: true, sparse: true }
 );
 
 export const OrderHistory = mongoose.model<IOrderHistory>(
