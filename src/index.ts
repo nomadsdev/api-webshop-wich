@@ -5,6 +5,9 @@ import topupRoutes from './routes/topup.js'
 import adminRoutes from './routes/admin.js'
 import productRoutes from './routes/wichxshop/product.js'
 import statusRoutes from './routes/status.js'
+import profileRoutes from './routes/profile.js'
+import imageSlideRoutes from './routes/imageslide.js'
+import notifyRoutes from './routes/notify.js'
 
 import { cors } from 'hono/cors'
 import { connectDB } from './lib/mongodb.js'
@@ -17,7 +20,10 @@ app.route('/api/v1/product', productRoutes)
 app.route('/api/v1/auth', authRoutes)
 app.route('/api/v1/topup', topupRoutes)
 app.route('/api/v1/status', statusRoutes)
+app.route('/api/v1/profile', profileRoutes)
 app.route('/api/v1', adminRoutes)
+app.route('/api/v1/imageslides', imageSlideRoutes)
+app.route('/api/v1/notify', notifyRoutes)
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')

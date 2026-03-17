@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import axios from "axios";
 import { connectDB } from "../../lib/mongodb.js";
-import { auth, type AuthContext } from "../../middleware/auth.middleware.js";
+import { auth, authAdmin, type AuthContext } from "../../middleware/auth.middleware.js";
 import { User } from "../../models/User.js";
 import {
   OrderHistory,
@@ -319,6 +319,56 @@ router.get("/history", auth, async (c: AuthContext) => {
     });
   } catch (error) {
     console.error("Get order history error:", error);
+    return c.json(
+      {
+        success: false,
+        message: "ดึงประวัติการสั่งซื้อล้มเหลว",
+      },
+      500,
+    );
+  }
+});
+
+router.get("/admin/history", authAdmin, async (c: AuthContext) => {
+  try {
+    await connectDB();
+
+    const history = await OrderHistory.find({})
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    return c.json({
+      success: true,
+      message: "ดึงประวัติการสั่งซื้อสำเร็จ",
+      data: {
+        total_orders: history.length,
+        history: history.map((record: IOrderHistory & { userId?: any }) => ({
+          id: record._id,
+          provider: record.provider,
+          status: record.status,
+          externalOrderId: record.externalOrderId,
+          productId: record.productId,
+          productName: record.productName,
+          productPrice: record.productPrice,
+          quantity: record.quantity,
+          totalPrice: record.totalPrice,
+          keys: record.keys,
+          pointsBefore: record.pointsBefore,
+          pointsDeducted: record.pointsDeducted,
+          pointsAfter: record.pointsAfter,
+          errorCode: record.errorCode,
+          errorMessage: record.errorMessage,
+          createdAt: record.createdAt,
+          userId: record.userId ? {
+            username: record.userId.username,
+            email: record.userId.email
+          } : undefined
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Get admin order history error:", error);
     return c.json(
       {
         success: false,

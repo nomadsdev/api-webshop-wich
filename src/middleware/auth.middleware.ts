@@ -8,7 +8,6 @@ import "dotenv/config";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-// Define custom context type for authenticated requests
 export interface AuthContext extends Context {
   user?: {
     id: string;
