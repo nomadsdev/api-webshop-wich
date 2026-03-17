@@ -7,6 +7,7 @@ import {
   OrderHistory,
   type IOrderHistory,
 } from "../../models/OrderHistory.js";
+import { getProductRate, calculateProductPrice } from "./config.rate.js";
 
 const router = new Hono();
 
@@ -106,8 +107,11 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
   try {
     const productInfo = await getProductUnitPrice(productId);
-    unitPrice = productInfo.price;
+    const originalUnitPrice = productInfo.price;
     productName = productInfo.name;
+    
+    // Get rate configuration and calculate final price using new logic
+    unitPrice = await calculateProductPrice(originalUnitPrice, productId);
   } catch (error: any) {
     const message = error?.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้";
     return c.json(

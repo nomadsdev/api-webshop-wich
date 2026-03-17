@@ -5,6 +5,7 @@ import type { JwtPayload } from 'jsonwebtoken';
 import { connectDB } from '../lib/mongodb.js';
 import { User, type IUser } from '../models/User.js';
 import axios from 'axios';
+import { authRateLimit } from '../middleware/rate.limit.js';
 
 import "dotenv/config";
 
@@ -50,7 +51,7 @@ const generateToken = (user: IUser): string => {
   );
 };
 
-authRoutes.post('/register', async (c) => {
+authRoutes.post('/register', authRateLimit, async (c) => {
   try {
     await connectDB();
     
@@ -124,7 +125,7 @@ authRoutes.post('/register', async (c) => {
   }
 });
 
-authRoutes.post('/login', async (c) => {
+authRoutes.post('/login', authRateLimit, async (c) => {
   try {
     await connectDB();
     
