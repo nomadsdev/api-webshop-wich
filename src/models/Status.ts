@@ -1,12 +1,12 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IStatus extends Document {
-  title: string; // ชื่อสถิติ (ภาษาไทย)
-  subtitle: string; // คำบรรยาย (ภาษาอังกฤษ)
-  count: string; // จำนวน (เช่น "2.5k", "150", etc.)
-  unit: string; // หน่วย (เช่น "คน", "รายการ", "บาท")
-  order: number; // ลำดับการแสดง (1-4)
-  isActive: boolean; // สถานะการแสดง
+  title: string; 
+  subtitle: string; 
+  count: string; 
+  unit: string; 
+  order: number; 
+  isActive: boolean; 
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +46,7 @@ const StatusSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index สำหรับประสิทธิภาพ
+
 StatusSchema.index({ order: 1 }, { unique: true });
 StatusSchema.index({ isActive: 1 });
 

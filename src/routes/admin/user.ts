@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { connectDB } from "../../lib/mongodb.js";
 import { User } from "../../models/User.js";
 import { auth, authAdmin, type AuthContext } from "../../middleware/auth.middleware.js";
 
@@ -7,8 +6,6 @@ const router = new Hono();
 
 router.get("/admin/users", auth, authAdmin, async (c: AuthContext) => {
   try {
-    await connectDB();
-    
     const { search, role, page = "1", limit = "10" } = c.req.query();
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
@@ -60,7 +57,6 @@ router.get("/admin/users", auth, authAdmin, async (c: AuthContext) => {
 
 router.put("/admin/users/:id", auth, authAdmin, async (c: AuthContext) => {
   try {
-    await connectDB();
     const userId = c.req.param("id");
     const { role, points } = await c.req.json();
     
@@ -97,7 +93,6 @@ router.put("/admin/users/:id", auth, authAdmin, async (c: AuthContext) => {
 
 router.delete("/admin/users/:id", auth, authAdmin, async (c: AuthContext) => {
   try {
-    await connectDB();
     const userId = c.req.param("id");
     
     const user = await User.findByIdAndDelete(userId);

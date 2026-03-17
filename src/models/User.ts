@@ -8,7 +8,7 @@ export interface IUser extends Document {
   avatar?: string;
   password: string;
   points: number;
-  role: number; // 0 = user, 1 = admin
+  role: number; 
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -67,7 +67,7 @@ UserSchema.pre('save', async function(this: IUser) {
   }
 });
 
-// Compare password method
+
 UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);

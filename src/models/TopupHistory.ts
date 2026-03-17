@@ -72,7 +72,7 @@ const TopupHistorySchema = new Schema<ITopupHistory>({
   timestamps: true
 });
 
-// Index for faster queries
+
 TopupHistorySchema.index({ userId: 1, createdAt: -1 });
 TopupHistorySchema.index({ transactionId: 1 }, { unique: true });
 

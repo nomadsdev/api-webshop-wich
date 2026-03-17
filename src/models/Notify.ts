@@ -76,7 +76,7 @@ const NotifySchema = new Schema<INotify>({
   timestamps: true
 });
 
-// Indexes for better query performance
+
 NotifySchema.index({ isActive: 1, isPinned: -1, publishedAt: -1 });
 NotifySchema.index({ type: 1, isActive: 1 });
 NotifySchema.index({ priority: 1, isActive: 1 });

@@ -4,7 +4,7 @@ import "dotenv/config";
 
 import buyProductRoutes from "./buy.product.js";
 import rateAdminRoutes from "./rate.admin.js";
-import { getProductRate, calculateProductPrice, RateConfig } from "./config.rate.js";
+import { calculateProductPrice, RateConfig } from "./config.rate.js";
 
 const router = new Hono();
 
@@ -19,52 +19,55 @@ router.get("/products", async (c) => {
       },
     });
 
-    // Apply rate calculations to product prices
     const productsData = res.data;
     if (productsData.success && productsData.data) {
-      const products = Array.isArray(productsData.data) 
-        ? productsData.data 
+      const products = Array.isArray(productsData.data)
+        ? productsData.data
         : productsData.data.products || [];
 
-      // Calculate final prices with rate configurations
       const productsWithRates = await Promise.all(
         products.map(async (product: any) => {
           const originalPrice = product.price || product.productPrice || 0;
-          const finalPrice = await calculateProductPrice(originalPrice, product.id || product.productId);
-          
-          // Get rate config for display
-          const specificConfig = await RateConfig.findOne({ 
-            productId: product.id || product.productId, 
-            isActive: true, 
-            isGlobal: false 
+          const finalPrice = await calculateProductPrice(
+            originalPrice,
+            product.id || product.productId,
+          );
+
+          const specificConfig = await RateConfig.findOne({
+            productId: product.id || product.productId,
+            isActive: true,
+            isGlobal: false,
           });
-          const globalConfig = await RateConfig.findOne({ 
-            isGlobal: true, 
-            isActive: true 
+          const globalConfig = await RateConfig.findOne({
+            isGlobal: true,
+            isActive: true,
           });
-          
+
           return {
             ...product,
-            originalPrice, // Keep original price for reference
-            price: finalPrice, // Update display price with calculated rate
-            rateConfig: specificConfig ? {
-              percentage: specificConfig.percentage,
-              fixedAmount: specificConfig.fixedAmount,
-              customPrice: specificConfig.customPrice,
-              isActive: specificConfig.isActive,
-              description: specificConfig.description,
-            } : globalConfig ? {
-              percentage: globalConfig.percentage,
-              fixedAmount: globalConfig.fixedAmount,
-              customPrice: globalConfig.customPrice,
-              isActive: globalConfig.isActive,
-              description: globalConfig.description,
-            } : null,
+            originalPrice,
+            price: finalPrice,
+            rateConfig: specificConfig
+              ? {
+                  percentage: specificConfig.percentage,
+                  fixedAmount: specificConfig.fixedAmount,
+                  customPrice: specificConfig.customPrice,
+                  isActive: specificConfig.isActive,
+                  description: specificConfig.description,
+                }
+              : globalConfig
+                ? {
+                    percentage: globalConfig.percentage,
+                    fixedAmount: globalConfig.fixedAmount,
+                    customPrice: globalConfig.customPrice,
+                    isActive: globalConfig.isActive,
+                    description: globalConfig.description,
+                  }
+                : null,
           };
-        })
+        }),
       );
 
-      // Return the modified data
       if (Array.isArray(productsData.data)) {
         productsData.data = productsWithRates;
       } else if (productsData.data?.products) {
@@ -104,42 +107,46 @@ router.get("/products/:id", async (c) => {
       },
     });
 
-    // Apply rate calculation to single product price
     const productData = res.data;
     if (productData.success && productData.data) {
       const product = productData.data;
       const originalPrice = product.price || product.productPrice || 0;
-      const finalPrice = await calculateProductPrice(originalPrice, product.id || product.productId);
-      
-      // Get rate config for display
-      const specificConfig = await RateConfig.findOne({ 
-        productId: product.id || product.productId, 
-        isActive: true, 
-        isGlobal: false 
+      const finalPrice = await calculateProductPrice(
+        originalPrice,
+        product.id || product.productId,
+      );
+
+      const specificConfig = await RateConfig.findOne({
+        productId: product.id || product.productId,
+        isActive: true,
+        isGlobal: false,
       });
-      const globalConfig = await RateConfig.findOne({ 
-        isGlobal: true, 
-        isActive: true 
+      const globalConfig = await RateConfig.findOne({
+        isGlobal: true,
+        isActive: true,
       });
-      
-      // Update the product with calculated price
+
       productData.data = {
         ...product,
-        originalPrice, // Keep original price for reference
-        price: finalPrice, // Update display price with calculated rate
-        rateConfig: specificConfig ? {
-          percentage: specificConfig.percentage,
-          fixedAmount: specificConfig.fixedAmount,
-          customPrice: specificConfig.customPrice,
-          isActive: specificConfig.isActive,
-          description: specificConfig.description,
-        } : globalConfig ? {
-          percentage: globalConfig.percentage,
-          fixedAmount: globalConfig.fixedAmount,
-          customPrice: globalConfig.customPrice,
-          isActive: globalConfig.isActive,
-          description: globalConfig.description,
-        } : null,
+        originalPrice,
+        price: finalPrice,
+        rateConfig: specificConfig
+          ? {
+              percentage: specificConfig.percentage,
+              fixedAmount: specificConfig.fixedAmount,
+              customPrice: specificConfig.customPrice,
+              isActive: specificConfig.isActive,
+              description: specificConfig.description,
+            }
+          : globalConfig
+            ? {
+                percentage: globalConfig.percentage,
+                fixedAmount: globalConfig.fixedAmount,
+                customPrice: globalConfig.customPrice,
+                isActive: globalConfig.isActive,
+                description: globalConfig.description,
+              }
+            : null,
       };
     }
 

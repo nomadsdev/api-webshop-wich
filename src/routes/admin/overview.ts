@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { connectDB } from "../../lib/mongodb.js";
 import { User } from "../../models/User.js";
 import { OrderHistory } from "../../models/OrderHistory.js";
 import { TopupHistory } from "../../models/TopupHistory.js";
@@ -9,26 +8,23 @@ const router = new Hono();
 
 router.get("/admin/overview", auth, authAdmin, async (c: AuthContext) => {
   try {
-    await connectDB();
-    
-    // Get user statistics
     const totalUsers = await User.countDocuments();
     const totalAdmins = await User.countDocuments({ role: 1 });
     const totalRegularUsers = totalUsers - totalAdmins;
     
-    // Get order statistics
+    
     const totalOrders = await OrderHistory.countDocuments();
     const successfulOrders = await OrderHistory.countDocuments({ status: "success" });
     const failedOrders = await OrderHistory.countDocuments({ status: "failed" });
     const pendingOrders = await OrderHistory.countDocuments({ status: "pending" });
     
-    // Get topup statistics
+    
     const totalTopups = await TopupHistory.countDocuments();
     const successfulTopups = await TopupHistory.countDocuments({ status: "success" });
     const failedTopups = await TopupHistory.countDocuments({ status: "failed" });
     const pendingTopups = await TopupHistory.countDocuments({ status: "pending" });
     
-    // Get revenue statistics
+    
     const totalRevenue = await OrderHistory.aggregate([
       { $match: { status: "success" } },
       { $group: { _id: null, total: { $sum: "$totalPrice" } } }
@@ -39,7 +35,7 @@ router.get("/admin/overview", auth, authAdmin, async (c: AuthContext) => {
       { $group: { _id: null, total: { $sum: "$pointsAdded" } } }
     ]);
     
-    // Get recent activities
+    
     const recentOrders = await OrderHistory.find()
       .populate('userId', 'username email')
       .sort({ createdAt: -1 })
@@ -55,7 +51,7 @@ router.get("/admin/overview", auth, authAdmin, async (c: AuthContext) => {
       .sort({ createdAt: -1 })
       .limit(5);
     
-    // Get monthly statistics (last 6 months)
+    
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     
@@ -99,7 +95,7 @@ router.get("/admin/overview", auth, authAdmin, async (c: AuthContext) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
     
-    // Get top products
+    
     const topProducts = await OrderHistory.aggregate([
       { $match: { status: "success" } },
       {

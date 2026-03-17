@@ -40,7 +40,7 @@ const ImageSlideSchema = new Schema<IImageSlide>({
   timestamps: true
 });
 
-// Sort by order field by default
+
 ImageSlideSchema.index({ order: 1 });
 
 export const ImageSlide = mongoose.model<IImageSlide>('ImageSlide', ImageSlideSchema);

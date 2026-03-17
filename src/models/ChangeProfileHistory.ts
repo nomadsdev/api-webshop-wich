@@ -60,7 +60,7 @@ const ChangeProfileHistorySchema = new Schema<IChangeProfileHistory>({
   },
 });
 
-// Index for efficient queries
+
 ChangeProfileHistorySchema.index({ userId: 1, createdAt: -1 });
 ChangeProfileHistorySchema.index({ createdAt: -1 });
 ChangeProfileHistorySchema.index({ status: 1 });

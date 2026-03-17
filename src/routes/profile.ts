@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import bcrypt from "bcrypt";
-import { connectDB } from "../lib/mongodb.js";
 import { auth, type AuthContext } from "../middleware/auth.middleware.js";
 import { User } from "../models/User.js";
-import { ChangeProfileHistory, type IChangeProfileHistory } from "../models/ChangeProfileHistory.js";
+import {
+  ChangeProfileHistory,
+  type IChangeProfileHistory,
+} from "../models/ChangeProfileHistory.js";
 
 const router = new Hono();
 
-// Helper function to record profile change history
 const recordProfileChange = async (
   userId: string,
   fieldType: "username" | "email" | "phone" | "password",
@@ -17,7 +18,7 @@ const recordProfileChange = async (
   status: "success" | "failed",
   errorMessage?: string,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
 ) => {
   try {
     const history = new ChangeProfileHistory({
@@ -37,11 +38,8 @@ const recordProfileChange = async (
   }
 };
 
-// Get current user profile
 router.get("/", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(
@@ -87,11 +85,8 @@ router.get("/", auth, async (c: AuthContext) => {
   }
 });
 
-// Update username
 router.put("/username", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(
@@ -103,7 +98,7 @@ router.put("/username", auth, async (c: AuthContext) => {
       );
     }
 
-    const body = await c.req.json().catch(() => ({} as any));
+    const body = await c.req.json().catch(() => ({}) as any);
     const { username, password } = body;
 
     if (!username || typeof username !== "string") {
@@ -126,7 +121,6 @@ router.put("/username", auth, async (c: AuthContext) => {
       );
     }
 
-    // Validate username format
     if (username.length < 3 || username.length > 20) {
       return c.json(
         {
@@ -148,12 +142,14 @@ router.put("/username", auth, async (c: AuthContext) => {
       );
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "username",
@@ -163,7 +159,7 @@ router.put("/username", auth, async (c: AuthContext) => {
         "failed",
         "รหัสผ่านไม่ถูกต้อง",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -175,12 +171,14 @@ router.put("/username", auth, async (c: AuthContext) => {
       );
     }
 
-    // Check if username already exists
     const existingUser = await User.findOne({ username, _id: { $ne: userId } });
     if (existingUser) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "username",
@@ -190,7 +188,7 @@ router.put("/username", auth, async (c: AuthContext) => {
         "failed",
         "username นี้ถูกใช้งานแล้ว",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -206,9 +204,10 @@ router.put("/username", auth, async (c: AuthContext) => {
     user.username = username;
     await user.save();
 
-    const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const ipAddress =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
     const userAgent = c.req.header("user-agent") || "unknown";
-    
+
     await recordProfileChange(
       userId,
       "username",
@@ -218,7 +217,7 @@ router.put("/username", auth, async (c: AuthContext) => {
       "success",
       undefined,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return c.json({
@@ -240,11 +239,8 @@ router.put("/username", auth, async (c: AuthContext) => {
   }
 });
 
-// Update email
 router.put("/email", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(
@@ -256,7 +252,7 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    const body = await c.req.json().catch(() => ({} as any));
+    const body = await c.req.json().catch(() => ({}) as any);
     const { email, password } = body;
 
     if (!email || typeof email !== "string") {
@@ -279,7 +275,6 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return c.json(
@@ -302,12 +297,15 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    // Verify password
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "email",
@@ -317,7 +315,7 @@ router.put("/email", auth, async (c: AuthContext) => {
         "failed",
         "รหัสผ่านไม่ถูกต้อง",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -329,12 +327,15 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    // Check if email already exists
+    
     const existingUser = await User.findOne({ email, _id: { $ne: userId } });
     if (existingUser) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "email",
@@ -344,7 +345,7 @@ router.put("/email", auth, async (c: AuthContext) => {
         "failed",
         "email นี้ถูกใช้งานแล้ว",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -360,9 +361,10 @@ router.put("/email", auth, async (c: AuthContext) => {
     user.email = email;
     await user.save();
 
-    const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const ipAddress =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
     const userAgent = c.req.header("user-agent") || "unknown";
-    
+
     await recordProfileChange(
       userId,
       "email",
@@ -372,7 +374,7 @@ router.put("/email", auth, async (c: AuthContext) => {
       "success",
       undefined,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return c.json({
@@ -394,11 +396,9 @@ router.put("/email", auth, async (c: AuthContext) => {
   }
 });
 
-// Update phone
+
 router.put("/phone", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(
@@ -410,7 +410,7 @@ router.put("/phone", auth, async (c: AuthContext) => {
       );
     }
 
-    const body = await c.req.json().catch(() => ({} as any));
+    const body = await c.req.json().catch(() => ({}) as any);
     const { phone, password } = body;
 
     if (!phone || typeof phone !== "string") {
@@ -433,7 +433,7 @@ router.put("/phone", auth, async (c: AuthContext) => {
       );
     }
 
-    // Validate phone format (Thai phone number)
+    
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
       return c.json(
@@ -456,12 +456,15 @@ router.put("/phone", auth, async (c: AuthContext) => {
       );
     }
 
-    // Verify password
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "phone",
@@ -471,7 +474,7 @@ router.put("/phone", auth, async (c: AuthContext) => {
         "failed",
         "รหัสผ่านไม่ถูกต้อง",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -483,12 +486,15 @@ router.put("/phone", auth, async (c: AuthContext) => {
       );
     }
 
-    // Check if phone already exists
+    
     const existingUser = await User.findOne({ phone, _id: { $ne: userId } });
     if (existingUser) {
-      const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+      const ipAddress =
+        c.req.header("x-forwarded-for") ||
+        c.req.header("x-real-ip") ||
+        "unknown";
       const userAgent = c.req.header("user-agent") || "unknown";
-      
+
       await recordProfileChange(
         userId,
         "phone",
@@ -498,7 +504,7 @@ router.put("/phone", auth, async (c: AuthContext) => {
         "failed",
         "เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว",
         ipAddress,
-        userAgent
+        userAgent,
       );
 
       return c.json(
@@ -514,9 +520,10 @@ router.put("/phone", auth, async (c: AuthContext) => {
     user.phone = phone;
     await user.save();
 
-    const ipAddress = c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
+    const ipAddress =
+      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
     const userAgent = c.req.header("user-agent") || "unknown";
-    
+
     await recordProfileChange(
       userId,
       "phone",
@@ -526,7 +533,7 @@ router.put("/phone", auth, async (c: AuthContext) => {
       "success",
       undefined,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return c.json({
@@ -548,11 +555,9 @@ router.put("/phone", auth, async (c: AuthContext) => {
   }
 });
 
-// Get profile change history
+
 router.get("/history", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(

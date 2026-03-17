@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import axios from "axios";
-import { connectDB } from "../../lib/mongodb.js";
 import { User } from "../../models/User.js";
 import { TopupHistory, type ITopupHistory } from "../../models/TopupHistory.js";
 import { auth, type AuthContext } from "../../middleware/auth.middleware.js";
@@ -14,8 +13,6 @@ const router = new Hono();
 
 router.post("/verify-slip", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const { qrcode } = await c.req.json();
 
     if (!qrcode) {
@@ -215,8 +212,6 @@ router.post("/verify-slip", auth, async (c: AuthContext) => {
 
 router.get("/history", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const user = await User.findById(c.user?.id);
     if (!user) {
       return c.json(
@@ -264,13 +259,11 @@ router.get("/history", auth, async (c: AuthContext) => {
 
 router.get("/admin/history", async (c) => {
   try {
-    await connectDB();
-    
     const topupHistory = await TopupHistory.find({})
       .sort({ createdAt: -1 })
       .limit(100)
-      .populate('userId', 'username email');
-    
+      .populate("userId", "username email");
+
     return c.json({
       success: true,
       message: "ดึงประวัติการเติมเงินทั้งหมดสำเร็จ",

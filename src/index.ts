@@ -9,6 +9,7 @@ import profileRoutes from './routes/profile.js'
 import imageSlideRoutes from './routes/imageslide.js'
 import notifyRoutes from './routes/notify.js'
 import AdminConfigRateRoutes from './routes/wichxshop/rate.admin.js'
+import wichxshopRoutes from './routes/wichxshop/wichxshop.js'
 
 import { cors } from 'hono/cors'
 import { connectDB } from './lib/mongodb.js'
@@ -26,12 +27,12 @@ app.route('/api/v1', adminRoutes)
 app.route('/api/v1/imageslides', imageSlideRoutes)
 app.route('/api/v1/notify', notifyRoutes)
 app.route('/api/v1/wichxshop/admin', AdminConfigRateRoutes)
+app.route('/api/v1/services', wichxshopRoutes)
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-// Connect to database before starting server
 const startServer = async () => {
   try {
     await connectDB()

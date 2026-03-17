@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import axios from "axios";
-import { connectDB } from "../../lib/mongodb.js";
-import { auth, authAdmin, type AuthContext } from "../../middleware/auth.middleware.js";
-import { User } from "../../models/User.js";
 import {
-  OrderHistory,
-  type IOrderHistory,
-} from "../../models/OrderHistory.js";
+  auth,
+  authAdmin,
+  type AuthContext,
+} from "../../middleware/auth.middleware.js";
+import { User } from "../../models/User.js";
+import { OrderHistory, type IOrderHistory } from "../../models/OrderHistory.js";
 import { getProductRate, calculateProductPrice } from "./config.rate.js";
 
 const router = new Hono();
@@ -55,8 +55,6 @@ const getProductUnitPrice = async (productId: string) => {
 };
 
 router.post("/buy", auth, async (c: AuthContext) => {
-  await connectDB();
-
   const userId = c.user?.id;
   if (!userId) {
     return c.json(
@@ -78,7 +76,7 @@ router.post("/buy", auth, async (c: AuthContext) => {
     );
   }
 
-  const body = await c.req.json().catch(() => ({} as any));
+  const body = await c.req.json().catch(() => ({}) as any);
   const productId = body?.productId;
   const quantity = Number(body?.quantity ?? 1);
 
@@ -109,11 +107,12 @@ router.post("/buy", auth, async (c: AuthContext) => {
     const productInfo = await getProductUnitPrice(productId);
     const originalUnitPrice = productInfo.price;
     productName = productInfo.name;
+
     
-    // Get rate configuration and calculate final price using new logic
     unitPrice = await calculateProductPrice(originalUnitPrice, productId);
   } catch (error: any) {
-    const message = error?.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้";
+    const message =
+      error?.response?.data?.message || "ไม่สามารถดึงข้อมูลสินค้าได้";
     return c.json(
       {
         success: false,
@@ -149,7 +148,7 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
   const pointsBefore = userBefore.points;
 
-  // Generate a temporary externalOrderId to avoid duplicate null issue
+  
   const tempExternalOrderId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const orderHistory = new OrderHistory({
@@ -221,9 +220,6 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
     const externalOrderId = buyResponse?.data?.id;
     const keys = buyResponse?.data?.key;
-    
-    // Use our calculated unitPrice instead of Wichxshop API price to maintain consistency
-    // This ensures the recorded price matches what the user actually paid
     const finalUnitPrice = unitPrice;
     const finalTotalPrice = finalUnitPrice * quantity;
 
@@ -252,7 +248,8 @@ router.post("/buy", auth, async (c: AuthContext) => {
   } catch (error: any) {
     const status = error?.response?.status;
     const apiMessage = error?.response?.data?.message;
-    const message = apiMessage || error?.message || "เกิดข้อผิดพลาดในการซื้อสินค้า";
+    const message =
+      apiMessage || error?.message || "เกิดข้อผิดพลาดในการซื้อสินค้า";
 
     const refundedUser = await User.findByIdAndUpdate(
       userId,
@@ -280,8 +277,6 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
 router.get("/history", auth, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const userId = c.user?.id;
     if (!userId) {
       return c.json(
@@ -336,10 +331,8 @@ router.get("/history", auth, async (c: AuthContext) => {
 
 router.get("/admin/history", authAdmin, async (c: AuthContext) => {
   try {
-    await connectDB();
-
     const history = await OrderHistory.find({})
-      .populate('userId', 'username email')
+      .populate("userId", "username email")
       .sort({ createdAt: -1 })
       .limit(100);
 
@@ -365,10 +358,12 @@ router.get("/admin/history", authAdmin, async (c: AuthContext) => {
           errorCode: record.errorCode,
           errorMessage: record.errorMessage,
           createdAt: record.createdAt,
-          userId: record.userId ? {
-            username: record.userId.username,
-            email: record.userId.email
-          } : undefined
+          userId: record.userId
+            ? {
+                username: record.userId.username,
+                email: record.userId.email,
+              }
+            : undefined,
         })),
       },
     });

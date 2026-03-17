@@ -5,7 +5,7 @@ import { auth, authAdmin } from "../middleware/auth.middleware.js";
 
 const app = new Hono();
 
-// Validation schemas
+
 const createStatusSchema = z.object({
   title: z.string().min(1).max(100),
   subtitle: z.string().min(1).max(100),
@@ -86,7 +86,7 @@ app.get('/', async (c) => {
   }
 });
 
-// GET /status/all - ดึงข้อมูลสถิติทั้งหมดสำหรับ admin (authenticated users)
+
 app.get('/all', auth, async (c) => {
   try {
     const statuses = await Status.find({})
@@ -105,13 +105,13 @@ app.get('/all', auth, async (c) => {
   }
 });
 
-// POST /status - สร้างสถิติใหม่ (admin only)
+
 app.post('/', auth, async (c) => {
   try {
     const body = await c.req.json();
     const validatedData = createStatusSchema.parse(body);
 
-    // ตรวจสอบว่า order ไม่ซ้ำ
+    
     const existingOrder = await Status.findOne({ order: validatedData.order });
     if (existingOrder) {
       return c.json({
@@ -153,7 +153,7 @@ app.post('/', auth, async (c) => {
   }
 });
 
-// PUT /status/:id - อัปเดตสถิติ (admin only)
+
 app.put('/:id', authAdmin, async (c) => {
   try {
     const { id } = c.req.param();
@@ -168,7 +168,7 @@ app.put('/:id', authAdmin, async (c) => {
       }, 404);
     }
 
-    // ตรวจสอบ order ซ้ำ (ถ้ามีการเปลี่ยน order)
+    
     if (validatedData.order && validatedData.order !== status.order) {
       const existingOrder = await Status.findOne({
         order: validatedData.order,
@@ -207,7 +207,7 @@ app.put('/:id', authAdmin, async (c) => {
   }
 });
 
-// DELETE /status/:id - ลบสถิติ (admin only)
+
 app.delete('/:id', authAdmin, async (c) => {
   try {
     const { id } = c.req.param();
