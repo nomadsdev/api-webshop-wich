@@ -221,9 +221,10 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
     const externalOrderId = buyResponse?.data?.id;
     const keys = buyResponse?.data?.key;
-    const productPrice = buyResponse?.data?.productPrice;
-    const finalUnitPrice =
-      typeof productPrice === "number" && productPrice > 0 ? productPrice : unitPrice;
+    
+    // Use our calculated unitPrice instead of Wichxshop API price to maintain consistency
+    // This ensures the recorded price matches what the user actually paid
+    const finalUnitPrice = unitPrice;
     const finalTotalPrice = finalUnitPrice * quantity;
 
     await OrderHistory.findByIdAndUpdate(orderHistory._id, {
