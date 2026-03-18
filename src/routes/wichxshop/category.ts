@@ -6,6 +6,7 @@ import {
   type AuthContext,
 } from "../../middleware/auth.middleware.js";
 import { Category } from "../../models/Category.js";
+import { calculateProductPrice, RateConfig } from "./config.rate.js";
 
 const router = new Hono();
 const WICKXSHOP_API_KEY = process.env.WICKXSHOP_API_KEY;
@@ -80,8 +81,52 @@ router.get("/categories/slug/:sub", async (c) => {
             : res.data.data.products || []
           : [];
 
-        products = allProducts.filter((product: any) =>
+        const filteredProducts = allProducts.filter((product: any) =>
           foundCategory.productIds.includes(product.id || product.productId),
+        );
+
+        // Apply rate calculations to products
+        products = await Promise.all(
+          filteredProducts.map(async (product: any) => {
+            const originalPrice = product.price || product.productPrice || 0;
+            const finalPrice = await calculateProductPrice(
+              originalPrice,
+              product.id || product.productId,
+            );
+
+            const specificConfig = await RateConfig.findOne({
+              productId: product.id || product.productId,
+              isActive: true,
+              isGlobal: false,
+            });
+            const globalConfig = await RateConfig.findOne({
+              isGlobal: true,
+              isActive: true,
+            });
+
+            return {
+              ...product,
+              originalPrice,
+              price: finalPrice,
+              rateConfig: specificConfig
+                ? {
+                    percentage: specificConfig.percentage,
+                    fixedAmount: specificConfig.fixedAmount,
+                    customPrice: specificConfig.customPrice,
+                    isActive: specificConfig.isActive,
+                    description: specificConfig.description,
+                  }
+                : globalConfig
+                  ? {
+                      percentage: globalConfig.percentage,
+                      fixedAmount: globalConfig.fixedAmount,
+                      customPrice: globalConfig.customPrice,
+                      isActive: globalConfig.isActive,
+                      description: globalConfig.description,
+                    }
+                  : null,
+            };
+          }),
         );
       } catch (apiError) {
         console.error("Error fetching products from Wichxshop API:", apiError);
@@ -138,8 +183,52 @@ router.get("/categories/:id", async (c) => {
             : res.data.data.products || []
           : [];
 
-        products = allProducts.filter((product: any) =>
+        const filteredProducts = allProducts.filter((product: any) =>
           category.productIds.includes(product.id || product.productId),
+        );
+
+        // Apply rate calculations to products
+        products = await Promise.all(
+          filteredProducts.map(async (product: any) => {
+            const originalPrice = product.price || product.productPrice || 0;
+            const finalPrice = await calculateProductPrice(
+              originalPrice,
+              product.id || product.productId,
+            );
+
+            const specificConfig = await RateConfig.findOne({
+              productId: product.id || product.productId,
+              isActive: true,
+              isGlobal: false,
+            });
+            const globalConfig = await RateConfig.findOne({
+              isGlobal: true,
+              isActive: true,
+            });
+
+            return {
+              ...product,
+              originalPrice,
+              price: finalPrice,
+              rateConfig: specificConfig
+                ? {
+                    percentage: specificConfig.percentage,
+                    fixedAmount: specificConfig.fixedAmount,
+                    customPrice: specificConfig.customPrice,
+                    isActive: specificConfig.isActive,
+                    description: specificConfig.description,
+                  }
+                : globalConfig
+                  ? {
+                      percentage: globalConfig.percentage,
+                      fixedAmount: globalConfig.fixedAmount,
+                      customPrice: globalConfig.customPrice,
+                      isActive: globalConfig.isActive,
+                      description: globalConfig.description,
+                    }
+                  : null,
+            };
+          }),
         );
       } catch (apiError) {
         console.error("Error fetching products from Wichxshop API:", apiError);
