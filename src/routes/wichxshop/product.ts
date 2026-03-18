@@ -4,6 +4,7 @@ import "dotenv/config";
 
 import buyProductRoutes from "./buy.product.js";
 import rateAdminRoutes from "./rate.admin.js";
+import categoryRoutes from "./category.js";
 import { calculateProductPrice, RateConfig } from "./config.rate.js";
 
 const router = new Hono();
@@ -174,5 +175,6 @@ router.get("/products/:id", async (c) => {
 
 router.route("/", buyProductRoutes);
 router.route("/", rateAdminRoutes);
+router.route("/", categoryRoutes);
 
 export default router;

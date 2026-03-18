@@ -11,7 +11,7 @@ const router = new Hono();
 
 const recordProfileChange = async (
   userId: string,
-  fieldType: "username" | "email" | "phone" | "password",
+  fieldType: "username" | "email" | "password",
   oldValue: string | undefined,
   newValue: string | undefined,
   changeType: "update" | "delete" | "add",
@@ -69,7 +69,6 @@ router.get("/", auth, async (c: AuthContext) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        phone: user.phone,
         createdAt: user.createdAt,
       },
     });
@@ -395,166 +394,6 @@ router.put("/email", auth, async (c: AuthContext) => {
     );
   }
 });
-
-
-router.put("/phone", auth, async (c: AuthContext) => {
-  try {
-    const userId = c.user?.id;
-    if (!userId) {
-      return c.json(
-        {
-          success: false,
-          message: "ไม่พบข้อมูลผู้ใช้",
-        },
-        401,
-      );
-    }
-
-    const body = await c.req.json().catch(() => ({}) as any);
-    const { phone, password } = body;
-
-    if (!phone || typeof phone !== "string") {
-      return c.json(
-        {
-          success: false,
-          message: "phone is required",
-        },
-        400,
-      );
-    }
-
-    if (!password || typeof password !== "string") {
-      return c.json(
-        {
-          success: false,
-          message: "รหัสผ่านจำเป็นสำหรับการแก้ไขข้อมูล",
-        },
-        400,
-      );
-    }
-
-    
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
-      return c.json(
-        {
-          success: false,
-          message: "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ต้องเป็นตัวเลข 10 หลัก)",
-        },
-        400,
-      );
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return c.json(
-        {
-          success: false,
-          message: "ไม่พบผู้ใช้งาน",
-        },
-        404,
-      );
-    }
-
-    
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      const ipAddress =
-        c.req.header("x-forwarded-for") ||
-        c.req.header("x-real-ip") ||
-        "unknown";
-      const userAgent = c.req.header("user-agent") || "unknown";
-
-      await recordProfileChange(
-        userId,
-        "phone",
-        user.phone,
-        phone,
-        "update",
-        "failed",
-        "รหัสผ่านไม่ถูกต้อง",
-        ipAddress,
-        userAgent,
-      );
-
-      return c.json(
-        {
-          success: false,
-          message: "รหัสผ่านไม่ถูกต้อง",
-        },
-        401,
-      );
-    }
-
-    
-    const existingUser = await User.findOne({ phone, _id: { $ne: userId } });
-    if (existingUser) {
-      const ipAddress =
-        c.req.header("x-forwarded-for") ||
-        c.req.header("x-real-ip") ||
-        "unknown";
-      const userAgent = c.req.header("user-agent") || "unknown";
-
-      await recordProfileChange(
-        userId,
-        "phone",
-        user.phone,
-        phone,
-        "update",
-        "failed",
-        "เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว",
-        ipAddress,
-        userAgent,
-      );
-
-      return c.json(
-        {
-          success: false,
-          message: "เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว",
-        },
-        400,
-      );
-    }
-
-    const oldPhone = user.phone;
-    user.phone = phone;
-    await user.save();
-
-    const ipAddress =
-      c.req.header("x-forwarded-for") || c.req.header("x-real-ip") || "unknown";
-    const userAgent = c.req.header("user-agent") || "unknown";
-
-    await recordProfileChange(
-      userId,
-      "phone",
-      oldPhone,
-      phone,
-      "update",
-      "success",
-      undefined,
-      ipAddress,
-      userAgent,
-    );
-
-    return c.json({
-      success: true,
-      message: "แก้ไขเบอร์โทรศัพท์สำเร็จ",
-      data: {
-        phone: user.phone,
-      },
-    });
-  } catch (error) {
-    console.error("Update phone error:", error);
-    return c.json(
-      {
-        success: false,
-        message: "เกิดข้อผิดพลาดในการแก้ไขเบอร์โทรศัพท์",
-      },
-      500,
-    );
-  }
-});
-
 
 router.get("/history", auth, async (c: AuthContext) => {
   try {
