@@ -1,13 +1,17 @@
 import axios from "axios";
 import { Hono } from "hono";
 import "dotenv/config";
+import {
+  auth,
+  type AuthContext,
+} from "../../middleware/auth.middleware.js";
 
 const router = new Hono();
 
 const WICKXSHOP_API_KEY = process.env.WICKXSHOP_API_KEY;
 const URL_API = "https://wichxshop.com/api/v1";
 
-router.get("/netflix-otp", async (c) => {
+router.get("/netflix-otp", auth, async (c: AuthContext) => {
   try {
     const email = c.req.query("email");
 
