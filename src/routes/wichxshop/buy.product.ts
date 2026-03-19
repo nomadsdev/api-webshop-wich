@@ -133,7 +133,7 @@ router.post("/buy", auth, async (c: AuthContext) => {
   }
 
   const totalPrice = unitPrice * quantity;
-  const pointsToDeduct = Math.ceil(totalPrice);
+  const pointsToDeduct = totalPrice;
 
   const userBefore = await User.findById(userId).select("points");
   if (!userBefore) {
