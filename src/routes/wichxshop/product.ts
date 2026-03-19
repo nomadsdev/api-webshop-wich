@@ -5,7 +5,11 @@ import "dotenv/config";
 import buyProductRoutes from "./buy.product.js";
 import rateAdminRoutes from "./rate.admin.js";
 import categoryRoutes from "./category.js";
+import hiddenProductAdminRoutes from "./hidden.product.admin.js";
+import hiddenProductConfigRoutes from "./config.hidden.product.js";
 import { calculateProductPrice, RateConfig } from "./config.rate.js";
+import { HiddenProduct } from "../../models/HiddenProduct.js";
+import { connectDB } from "../../lib/mongodb.js";
 
 const router = new Hono();
 
@@ -26,8 +30,16 @@ router.get("/products", async (c) => {
         ? productsData.data
         : productsData.data.products || [];
 
+      // Filter out hidden products
+      await connectDB();
+      const hiddenProducts = await HiddenProduct.find({ isHidden: true });
+      const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+      const visibleProducts = products.filter(
+        (product: any) => !hiddenProductIds.has(product.id || product.productId)
+      );
+
       const productsWithRates = await Promise.all(
-        products.map(async (product: any) => {
+        visibleProducts.map(async (product: any) => {
           const originalPrice = product.price || product.productPrice || 0;
           const finalPrice = await calculateProductPrice(
             originalPrice,
@@ -176,5 +188,7 @@ router.get("/products/:id", async (c) => {
 router.route("/", buyProductRoutes);
 router.route("/", rateAdminRoutes);
 router.route("/", categoryRoutes);
+router.route("/", hiddenProductAdminRoutes);
+router.route("/", hiddenProductConfigRoutes);
 
 export default router;

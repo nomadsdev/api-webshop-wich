@@ -7,6 +7,7 @@ import {
 } from "../../middleware/auth.middleware.js";
 import { Category } from "../../models/Category.js";
 import { calculateProductPrice, RateConfig } from "./config.rate.js";
+import { HiddenProduct } from "../../models/HiddenProduct.js";
 
 const router = new Hono();
 const WICKXSHOP_API_KEY = process.env.WICKXSHOP_API_KEY;
@@ -85,9 +86,15 @@ router.get("/categories/slug/:sub", async (c) => {
           foundCategory.productIds.includes(product.id || product.productId),
         );
 
+        const hiddenProducts = await HiddenProduct.find({ isHidden: true });
+        const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+        const visibleProducts = filteredProducts.filter(
+          (product: any) => !hiddenProductIds.has(product.id || product.productId)
+        );
+
         // Apply rate calculations to products
         products = await Promise.all(
-          filteredProducts.map(async (product: any) => {
+          visibleProducts.map(async (product: any) => {
             const originalPrice = product.price || product.productPrice || 0;
             const finalPrice = await calculateProductPrice(
               originalPrice,
@@ -187,9 +194,16 @@ router.get("/categories/:id", async (c) => {
           category.productIds.includes(product.id || product.productId),
         );
 
+        // Filter out hidden products
+        const hiddenProducts = await HiddenProduct.find({ isHidden: true });
+        const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+        const visibleProducts = filteredProducts.filter(
+          (product: any) => !hiddenProductIds.has(product.id || product.productId)
+        );
+
         // Apply rate calculations to products
         products = await Promise.all(
-          filteredProducts.map(async (product: any) => {
+          visibleProducts.map(async (product: any) => {
             const originalPrice = product.price || product.productPrice || 0;
             const finalPrice = await calculateProductPrice(
               originalPrice,
