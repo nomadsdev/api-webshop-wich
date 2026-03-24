@@ -108,7 +108,6 @@ router.post("/buy", auth, async (c: AuthContext) => {
     const originalUnitPrice = productInfo.price;
     productName = productInfo.name;
 
-    
     unitPrice = await calculateProductPrice(originalUnitPrice, productId);
   } catch (error: any) {
     const message =
@@ -148,7 +147,6 @@ router.post("/buy", auth, async (c: AuthContext) => {
 
   const pointsBefore = userBefore.points;
 
-  
   const tempExternalOrderId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const orderHistory = new OrderHistory({

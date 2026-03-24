@@ -296,7 +296,6 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       const ipAddress =
@@ -326,7 +325,6 @@ router.put("/email", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const existingUser = await User.findOne({ email, _id: { $ne: userId } });
     if (existingUser) {
       const ipAddress =

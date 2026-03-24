@@ -4,11 +4,7 @@ import {
   authAdmin,
   type AuthContext,
 } from "../../middleware/auth.middleware.js";
-import {
-  RateConfig,
-  calculateProductPrice,
-  initializeDefaultRates,
-} from "./config.rate.js";
+import { RateConfig, calculateProductPrice } from "./config.rate.js";
 
 const router = new Hono();
 
@@ -296,26 +292,6 @@ router.delete("/global-rate", auth, authAdmin, async (c: AuthContext) => {
       {
         success: false,
         message: "เกิดข้อผิดพลาดในการลบอัตราส่วนกลาง",
-      },
-      500,
-    );
-  }
-});
-
-router.post("/rates/initialize", auth, authAdmin, async (c: AuthContext) => {
-  try {
-    await initializeDefaultRates();
-
-    return c.json({
-      success: true,
-      message: "ตั้งค่าค่าธรรมเนียมเริ่มต้นสำเร็จ",
-    });
-  } catch (error: any) {
-    console.error("Initialize rates error:", error);
-    return c.json(
-      {
-        success: false,
-        message: "เกิดข้อผิดพลาดในการตั้งค่าค่าธรรมเนียมเริ่มต้น",
       },
       500,
     );

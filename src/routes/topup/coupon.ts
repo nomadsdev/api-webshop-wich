@@ -274,7 +274,6 @@ router.delete("/admin/coupons/:id", auth, authAdmin, async (c) => {
       );
     }
 
-    
     if (coupon.status === "active" && coupon.usedBy.length > 0) {
       return c.json(
         {
@@ -330,7 +329,6 @@ router.put("/admin/coupons/:id/edit", auth, authAdmin, async (c) => {
       );
     }
 
-    
     const existingCoupon = await Coupon.findOne({
       code: code.toUpperCase(),
       _id: { $ne: couponId },

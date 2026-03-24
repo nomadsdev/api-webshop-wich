@@ -294,7 +294,6 @@ router.delete("/admin/:id", auth, authAdmin, async (c: AuthContext) => {
   try {
     const notificationId = c.req.param("id");
 
-    
     if (!notificationId || !mongoose.Types.ObjectId.isValid(notificationId)) {
       return c.json(
         {
@@ -333,15 +332,10 @@ router.delete("/admin/:id", auth, authAdmin, async (c: AuthContext) => {
   }
 });
 
-
-
-
-
 router.get("/:id", async (c) => {
   try {
     const notificationId = c.req.param("id");
 
-    
     if (!notificationId || !mongoose.Types.ObjectId.isValid(notificationId)) {
       return c.json(
         {

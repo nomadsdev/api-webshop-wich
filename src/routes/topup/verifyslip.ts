@@ -278,7 +278,9 @@ router.post("/verify-slip", auth, async (c: AuthContext) => {
     const normalizedProxy = normalizeAccountNumber(receiverProxy);
     const normalizedAccount = normalizeAccountNumber(receiverAccount);
     const normalizedReceivePhone = normalizeAccountNumber(RECEIVE_PHONE_CLEAN);
-    const normalizedReceiveAccount = normalizeAccountNumber(RECEIVE_ACCOUNT_CLEAN);
+    const normalizedReceiveAccount = normalizeAccountNumber(
+      RECEIVE_ACCOUNT_CLEAN,
+    );
 
     const isPhoneMatch =
       normalizedProxy &&

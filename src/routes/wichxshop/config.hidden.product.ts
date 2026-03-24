@@ -16,10 +16,10 @@ router.get("/hidden-product/check/:productId", async (c) => {
         400,
       );
     }
-    
-    const hiddenProduct = await HiddenProduct.findOne({ 
-      productId, 
-      isHidden: true 
+
+    const hiddenProduct = await HiddenProduct.findOne({
+      productId,
+      isHidden: true,
     });
 
     return c.json({
@@ -27,12 +27,14 @@ router.get("/hidden-product/check/:productId", async (c) => {
       message: "ตรวจสอบสถานะสินค้าสำเร็จ",
       data: {
         isHidden: !!hiddenProduct,
-        hiddenInfo: hiddenProduct ? {
-          productId: hiddenProduct.productId,
-          productName: hiddenProduct.productName,
-          hiddenAt: hiddenProduct.hiddenAt,
-          reason: hiddenProduct.reason,
-        } : null,
+        hiddenInfo: hiddenProduct
+          ? {
+              productId: hiddenProduct.productId,
+              productName: hiddenProduct.productName,
+              hiddenAt: hiddenProduct.hiddenAt,
+              reason: hiddenProduct.reason,
+            }
+          : null,
       },
     });
   } catch (error: any) {
@@ -52,10 +54,10 @@ router.get("/hidden-product/ids", async (c) => {
   try {
     const hiddenProducts = await HiddenProduct.find(
       { isHidden: true },
-      { productId: 1, _id: 0 }
+      { productId: 1, _id: 0 },
     );
 
-    const hiddenProductIds = hiddenProducts.map(hp => hp.productId);
+    const hiddenProductIds = hiddenProducts.map((hp) => hp.productId);
 
     return c.json({
       success: true,

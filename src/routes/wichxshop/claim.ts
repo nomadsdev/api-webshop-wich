@@ -24,7 +24,6 @@ type WichxshopClaimResponse = {
   };
 };
 
-
 router.post("/claim", auth, async (c: AuthContext) => {
   const userId = c.user?.id;
   if (!userId) {
@@ -51,7 +50,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
   const orderId = body?.orderId;
   const reason = body?.reason;
 
-  
   if (!orderId || typeof orderId !== "string") {
     return c.json(
       {
@@ -83,7 +81,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
   }
 
   try {
-    
     const order = await OrderHistory.findOne({
       _id: orderId,
       userId,
@@ -101,7 +98,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const existingClaim = await ClaimHistory.findOne({
       orderId: order._id,
       userId,
@@ -117,7 +113,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
       );
     }
 
-    
     if (!order.externalOrderId) {
       return c.json(
         {
@@ -128,7 +123,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const claimRecord = new ClaimHistory({
       userId,
       orderId: order._id,
@@ -144,7 +138,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
 
     await claimRecord.save();
 
-    
     let apiResponse: WichxshopClaimResponse | undefined;
 
     try {
@@ -164,7 +157,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
 
       apiResponse = res.data;
 
-      
       await ClaimHistory.findByIdAndUpdate(claimRecord._id, {
         responsePayload: apiResponse,
         claimStatus: apiResponse?.data?.claimStatus || "PENDING",
@@ -175,7 +167,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
       const message =
         apiMessage || error?.message || "เกิดข้อผิดพลาดในการส่งคำขอเคลม";
 
-      
       await ClaimHistory.findByIdAndUpdate(claimRecord._id, {
         claimStatus: "REJECTED",
         errorMessage: message,
@@ -215,7 +206,6 @@ router.post("/claim", auth, async (c: AuthContext) => {
     );
   }
 });
-
 
 router.get("/claim/history", auth, async (c: AuthContext) => {
   try {
@@ -273,7 +263,6 @@ router.get("/claim/history", auth, async (c: AuthContext) => {
   }
 });
 
-
 router.get("/claim/admin/history", authAdmin, async (c: AuthContext) => {
   try {
     const claims = await ClaimHistory.find({})
@@ -328,7 +317,6 @@ router.get("/claim/admin/history", authAdmin, async (c: AuthContext) => {
     );
   }
 });
-
 
 router.put("/claim/admin/:claimId", authAdmin, async (c: AuthContext) => {
   try {

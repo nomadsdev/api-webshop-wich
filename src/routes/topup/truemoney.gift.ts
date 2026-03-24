@@ -26,7 +26,6 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
       );
     }
 
-    
     if (!gift_link.includes("gift.truemoney.com")) {
       return c.json(
         {
@@ -50,7 +49,6 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const verifyResponse = await axios.post(
       URL_API_VERIFY_TRUEMONEY,
       {
@@ -81,7 +79,6 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
     const giftAmount = parseFloat(giftData.amount);
     const pointsToAdd = Math.floor(giftAmount);
 
-    
     const user = await User.findById(c.user?.id);
     if (!user) {
       return c.json(
@@ -93,17 +90,16 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
       );
     }
 
-    
     const topupHistory = new TopupHistory({
       userId: user._id,
-      transactionId: `TM_${Date.now()}`, 
+      transactionId: `TM_${Date.now()}`,
       amount: giftAmount,
       sender: giftData.owner_profile || "Unknown",
       receiver: giftData.redeemer_profile || PHONE_NUMBER_RECEIVE,
       transactionDate: new Date(giftData.time),
       pointsAdded: pointsToAdd,
       status: "success",
-      type: "truemoney_gift", 
+      type: "truemoney_gift",
     });
 
     try {
@@ -122,7 +118,6 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
       throw historyError;
     }
 
-    
     user.points += pointsToAdd;
     await user.save();
 
@@ -146,7 +141,6 @@ router.post("/verify-gift", auth, async (c: AuthContext) => {
       const errorData = error.response.data;
 
       if (status === 400 && errorData.status === "error") {
-        
         let errorMessage = errorData.message;
 
         switch (errorData.status) {

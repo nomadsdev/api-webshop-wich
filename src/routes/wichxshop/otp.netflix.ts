@@ -1,10 +1,7 @@
 import axios from "axios";
 import { Hono } from "hono";
 import "dotenv/config";
-import {
-  auth,
-  type AuthContext,
-} from "../../middleware/auth.middleware.js";
+import { auth, type AuthContext } from "../../middleware/auth.middleware.js";
 
 const router = new Hono();
 

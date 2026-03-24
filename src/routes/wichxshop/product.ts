@@ -30,12 +30,14 @@ router.get("/products", async (c) => {
         ? productsData.data
         : productsData.data.products || [];
 
-      // Filter out hidden products
       await connectDB();
       const hiddenProducts = await HiddenProduct.find({ isHidden: true });
-      const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+      const hiddenProductIds = new Set(
+        hiddenProducts.map((hp) => hp.productId),
+      );
       const visibleProducts = products.filter(
-        (product: any) => !hiddenProductIds.has(product.id || product.productId)
+        (product: any) =>
+          !hiddenProductIds.has(product.id || product.productId),
       );
 
       const productsWithRates = await Promise.all(

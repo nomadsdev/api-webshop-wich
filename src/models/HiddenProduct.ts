@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IHiddenProduct extends Document {
   productId: string;
@@ -11,40 +11,45 @@ export interface IHiddenProduct extends Document {
   updatedAt: Date;
 }
 
-const HiddenProductSchema: Schema = new Schema({
-  productId: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true
+const HiddenProductSchema: Schema = new Schema(
+  {
+    productId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    productName: {
+      type: String,
+      required: true,
+    },
+    isHidden: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    hiddenBy: {
+      type: String,
+      required: false,
+    },
+    hiddenAt: {
+      type: Date,
+      default: Date.now,
+    },
+    reason: {
+      type: String,
+      required: false,
+    },
   },
-  productName: {
-    type: String,
-    required: true
+  {
+    timestamps: true,
   },
-  isHidden: {
-    type: Boolean,
-    default: true,
-    index: true
-  },
-  hiddenBy: {
-    type: String,
-    required: false
-  },
-  hiddenAt: {
-    type: Date,
-    default: Date.now
-  },
-  reason: {
-    type: String,
-    required: false
-  }
-}, {
-  timestamps: true
-});
+);
 
-// Indexes for better performance
 HiddenProductSchema.index({ productId: 1, isHidden: 1 });
 HiddenProductSchema.index({ hiddenAt: -1 });
 
-export const HiddenProduct = mongoose.model<IHiddenProduct>('HiddenProduct', HiddenProductSchema);
+export const HiddenProduct = mongoose.model<IHiddenProduct>(
+  "HiddenProduct",
+  HiddenProductSchema,
+);

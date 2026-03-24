@@ -37,21 +37,18 @@ router.get("/categories", async (c) => {
   }
 });
 
-
 router.get("/categories/slug/:sub", async (c) => {
   try {
     const sub = c.req.param("sub");
-    
-    
+
     const categories = await Category.find({ isActive: true });
-    
-    
+
     const foundCategory = categories.find((category: any) => {
       const slug = category.title
         .toLowerCase()
-        .replace(/[^a-z0-9ก-๙]/g, '')
-        .replace(/\s+/g, '')
-        .replace(/(\d+)/g, '')
+        .replace(/[^a-z0-9ก-๙]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/(\d+)/g, "")
         .trim();
       return slug === sub;
     });
@@ -66,7 +63,6 @@ router.get("/categories/slug/:sub", async (c) => {
       );
     }
 
-    
     let products = [];
     if (foundCategory.productIds.length > 0) {
       try {
@@ -87,9 +83,12 @@ router.get("/categories/slug/:sub", async (c) => {
         );
 
         const hiddenProducts = await HiddenProduct.find({ isHidden: true });
-        const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+        const hiddenProductIds = new Set(
+          hiddenProducts.map((hp) => hp.productId),
+        );
         const visibleProducts = filteredProducts.filter(
-          (product: any) => !hiddenProductIds.has(product.id || product.productId)
+          (product: any) =>
+            !hiddenProductIds.has(product.id || product.productId),
         );
 
         // Apply rate calculations to products
@@ -196,9 +195,12 @@ router.get("/categories/:id", async (c) => {
 
         // Filter out hidden products
         const hiddenProducts = await HiddenProduct.find({ isHidden: true });
-        const hiddenProductIds = new Set(hiddenProducts.map(hp => hp.productId));
+        const hiddenProductIds = new Set(
+          hiddenProducts.map((hp) => hp.productId),
+        );
         const visibleProducts = filteredProducts.filter(
-          (product: any) => !hiddenProductIds.has(product.id || product.productId)
+          (product: any) =>
+            !hiddenProductIds.has(product.id || product.productId),
         );
 
         // Apply rate calculations to products
